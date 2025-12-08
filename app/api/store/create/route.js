@@ -3,6 +3,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getImageKit } from "@/configs/imagekit";
 import prisma from "@/lib/prisma";
+import ensureUser from "@/lib/ensureUser";
 
 export async function POST(request) {
   try {
@@ -20,6 +21,9 @@ export async function POST(request) {
     if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // ensure local DB user exists (sync from Clerk if necessary)
+    await ensureUser(userId);
 
     if (!name || !username || !description || !email || !contacts || !image) {
       return NextResponse.json({ error: "missing a store info" }, { status: 400 });
